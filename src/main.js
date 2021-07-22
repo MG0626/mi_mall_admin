@@ -2,8 +2,11 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+
 // 导入网络模块
 import http from './network/request';
+
+import './plugins/element.js'
 
 Vue.config.productionTip = false
 
