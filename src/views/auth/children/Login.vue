@@ -42,7 +42,11 @@ export default {
       // 生成现在时间的时间戳
       const time = Date.now();
       data.time = time;
-      window.localStorage.setItem('info', JSON.stringify(data));
+      const { token } = data;
+      // 保存用户信息到vuex
+      this.$store.dispatch('updateUserInfo', data);
+      // 保存token到vuex
+      this.$store.dispatch('updateToken', token);
       // 弹出提示
       this.$message.success(`登录成功，欢迎${data.name}~`);
       // 跳转到首页

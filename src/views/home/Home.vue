@@ -71,7 +71,7 @@ export default {
     // 获取用户信息
     getUserInfo(){
       // 从缓存获取
-      const { id, name, email, avatar } = JSON.parse(window.localStorage.getItem('info'));
+      const { id, name, email, avatar } = this.$store.state.userInfo;
       // 保存到data
       this.userInfo = { id, name, email, avatar };
     },
@@ -84,7 +84,7 @@ export default {
       // 获取成功，保存到data
       this.menus = data.menu;
       // 二级导航栏路由地址
-      const pathArr = [];
+      const pathArr = ['/'];
       this.menus.forEach(menu => {
         menu.children.forEach(item => {
           pathArr.push(item.path);

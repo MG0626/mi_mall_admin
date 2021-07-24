@@ -1,7 +1,5 @@
 <template>
-  <div>
-    用户列表
-  </div>
+  <el-card></el-card>
 </template>
 
 <script>
