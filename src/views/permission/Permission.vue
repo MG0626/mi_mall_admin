@@ -1,6 +1,6 @@
 <template>
   <div>
-    用户列表
+    permission
   </div>
 </template>
 

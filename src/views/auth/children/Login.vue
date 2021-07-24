@@ -9,7 +9,7 @@
       </el-form-item>
       <el-form-item>
         <div class="login_btn">
-          <button type="button" :disabled="is_disabled" @click="handleClick">登录</button>
+          <button type="button" :disabled="is_disabled" @click="handleClick" >登录</button>
         </div>
       </el-form-item>
     </el-form>

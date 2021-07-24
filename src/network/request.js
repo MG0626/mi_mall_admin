@@ -6,8 +6,10 @@ const http = axios.create({
   timeout: 5000,
 });
 
+
 // 请求拦截器
 http.interceptors.request.use((config) => {
+  config.headers.Authorization = "Bearer " + JSON.parse(window.localStorage.getItem('info') || '{"token": null}').token;
   return config;
 });
 // 响应拦截器

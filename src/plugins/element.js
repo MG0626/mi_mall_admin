@@ -15,7 +15,12 @@ import {
   MenuItem,
   Row,
   Submenu,
-  Message
+  Message,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  Breadcrumb,
+  BreadcrumbItem
 } from 'element-ui';
 
 Vue.use(Button);
@@ -32,6 +37,11 @@ Vue.use(Card);
 Vue.use(Form);
 Vue.use(FormItem);
 Vue.use(Input);
+Vue.use(Dropdown);
+Vue.use(DropdownItem);
+Vue.use(DropdownMenu);
+Vue.use(Breadcrumb);
+Vue.use(BreadcrumbItem);
 
 
 Vue.prototype.$message = Message;
