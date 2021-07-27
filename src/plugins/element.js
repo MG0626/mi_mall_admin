@@ -20,7 +20,19 @@ import {
   DropdownItem,
   DropdownMenu,
   Breadcrumb,
-  BreadcrumbItem
+  BreadcrumbItem,
+  Table,
+  TableColumn,
+  Loading,
+  Switch,
+  Pagination,
+  MessageBox,
+  Dialog,
+  Upload,
+  Select,
+  Option,
+  Tag,
+  Cascader
 } from 'element-ui';
 
 Vue.use(Button);
@@ -42,6 +54,18 @@ Vue.use(DropdownItem);
 Vue.use(DropdownMenu);
 Vue.use(Breadcrumb);
 Vue.use(BreadcrumbItem);
+Vue.use(Table);
+Vue.use(TableColumn);
+Vue.use(Loading);
+Vue.use(Switch);
+Vue.use(Pagination);
+Vue.use(Dialog);
+Vue.use(Upload);
+Vue.use(Select);
+Vue.use(Option);
+Vue.use(Tag);
+Vue.use(Cascader);
 
 
 Vue.prototype.$message = Message;
+Vue.prototype.$confirm = MessageBox.confirm;

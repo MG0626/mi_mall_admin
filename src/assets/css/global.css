@@ -1,0 +1,9 @@
+
+.el-table,
+.el-pagination {
+  margin-top: 15px;
+}
+
+.el-pagination{
+  text-align: center;
+}

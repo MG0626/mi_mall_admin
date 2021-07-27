@@ -109,13 +109,18 @@ export default {
         password: this.info.password
       }
 
-      const { data, status } = await this.$http.post('/users', info);
+      const { data, status } = await this.$http.post(`/users${this.$route.path === '/users' ? '/add' : ''}`, info);
       // 判断请求结果
       if(status !== 201) return this.$message.error(data);
       
-      // 成功则提示，且跳转到login
-      this.$message.success('注册成功，请登录~');
-      this.$router.push('/login');
+      // 成功
+      if (this.$route.path !== '/users') {
+        this.$message.success('注册成功，请登录~');
+        return this.$router.push('/login');
+      }
+      this.$message.success('添加成功~');
+      // 发射成功事件
+      this.$emit('success');
     }
   },
   computed: {

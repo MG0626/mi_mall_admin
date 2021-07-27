@@ -190,7 +190,7 @@ export default {
   .el-main {
     background-color: #fff;
     color: #333;
-    text-align: center;
+    height: calc(100vh - 48px);
   }
 }
 </style>
