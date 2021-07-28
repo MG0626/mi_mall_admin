@@ -17,7 +17,7 @@
             </template>
           </el-input>
         </el-col>
-        <el-col :span="2"><el-button type="primary" size="mini" @click="addDialogVisible = true">添加角色</el-button></el-col>
+        <el-col :span="2"><el-button type="primary" size="mini" @click="dialogVisible = true">添加角色</el-button></el-col>
       </el-row>
 
       <!-- 表格区域 -->
@@ -31,9 +31,10 @@
         <el-table-column align="center" label="名称" prop="role_name"></el-table-column>
         <el-table-column align="center" label="描述" prop="role_desc"></el-table-column>
         <el-table-column align="center" label="操作">
-          <template scope="scope">
+          <template #default="scope">
             <el-button size="mini" type="primary" round icon="el-icon-edit" @click="handleOpenEdit(scope.row)">编辑</el-button>
             <el-button size="mini" type="danger" round icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="warning" round icon="el-icon-s-custom" @click="handleOpenPermission(scope.row)">权限</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -45,12 +46,12 @@
         @handleSizeChange="handleSizeChange" 
         @handleCurrentChange="handleCurrentChange" />
       
-      <!-- 添加用户的Dialog 对话框 -->
+      <!-- 添加用户的Dialog -->
       <el-dialog
-        :visible.sync="addDialogVisible"
+        :visible.sync="dialogVisible"
         width="40%">
         <template #title>
-          <div class="title">添加角色</div>
+          <div class="title">{{ isEdit ? '修改角色信息' : '添加角色'}}</div>
         </template>
 
         <el-form :model="info" ref="ruleForm" label-position="right" :rules="rules">
@@ -63,7 +64,30 @@
         </el-form>
         <template #footer>
           <el-button @click="handleDialogClose">取 消</el-button>
-          <el-button type="primary" @click="handleAddPermission">确 定</el-button>
+          <el-button type="primary" @click="handleAddOrEdit">确 定</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 分配权限的Dialog -->
+      <el-dialog
+        :visible.sync="authDialogVisible"
+        width="40%">
+        <template #title>
+          <div class="title">分配权限</div>
+        </template>
+        <!-- 权限树 -->
+        <el-tree
+          :props="props"
+          :data="permissionList"
+          node-key="id"
+          ref="tree"
+          highlight-current
+          :default-checked-keys="currentSelects"
+          show-checkbox>
+        </el-tree>
+        <template #footer>
+          <el-button @click="authDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="handleAssign">确 定</el-button>
         </template>
       </el-dialog>
     </el-card>
@@ -91,13 +115,19 @@ import Pagination from '../../components/pagination/Pagination.vue';
         loading: false,
         // 列表总条数
         total: 0,
-        // 添加角色的Dialog 对话框开关
-        addDialogVisible: false,
+        // 添加或修改角色的Dialog对话框开关
+        dialogVisible: false,
+        // 分配权限的dialog
+        authDialogVisible: false,
+        // 当前是否为编辑
+        isEdit: false,
         // 角色信息
         info: {
           role_name: '',
           role_desc: ''
         },
+        // 当前修改的角色id
+        currentId: 0,
         // 验证规则
         rules: {
           role_name: [
@@ -106,7 +136,16 @@ import Pagination from '../../components/pagination/Pagination.vue';
           role_desc: [
             { required: true, message: '请输入角色描述', trigger: 'blur' }
           ]
-        }
+        },
+        // 权限树配置
+        props: {
+          children: 'children',
+          label: 'name'
+        },
+        // 权限树列表
+        permissionList: [],
+        // 当前选中的权限
+        currentSelects: []
       }
     },
     created(){
@@ -145,7 +184,24 @@ import Pagination from '../../components/pagination/Pagination.vue';
       },
       // 打开编辑
       handleOpenEdit(row){
-
+        // 获取信息
+        const { id, role_name, role_desc } = row;
+        // 填充数据
+        this.info = { role_name, role_desc };
+        this.currentId = id;
+        // 打开dialog
+        this.isEdit = true;
+        this.dialogVisible = true;
+      },
+      // 编辑
+      async handleEdit(){
+        const { data, status } = await this.$http.put(`/role/update/${this.currentId}`, this.info);
+        if(status !== 200) return this.$message.error(data);
+        this.$message.success('修改成功!');
+        // 重新获取数据
+        this.getRoleList();
+        // 关闭dialog
+        this.handleDialogClose();
       },
       // 删除角色
       handleDelete(row){
@@ -170,10 +226,23 @@ import Pagination from '../../components/pagination/Pagination.vue';
       },
       // 关闭dialog
       handleDialogClose(){
-        this.addDialogVisible = false;
+        // 关闭dialog
+        this.dialogVisible = false;
+        // 关闭编辑
+        this.isEdit = false;
+        // 清空数据
+        this.info = {
+          role_name: '',
+          role_desc: ''
+        }
       },
       // 添加角色
-      handleAddPermission(){
+      handleAddOrEdit(){
+        // 判断当前是否为编辑提交
+        if (this.isEdit) {
+          this.handleEdit();
+          return;
+        }
         // 验证是否通过
         this.$refs.ruleForm.validate(async (valid) => {
           if (valid) {
@@ -181,13 +250,61 @@ import Pagination from '../../components/pagination/Pagination.vue';
             const { data, status } = await this.$http.post('/role/add', this.info);
             if(status !== 201) return this.$message.error(data);
             // 关闭dialog
-            this.addDialogVisible = false;
+            this.dialogVisible = false;
             // 提示
             this.$message.success('角色添加成功！');
             // 刷新数据
             this.getRoleList();
           }
         });
+      },
+      // 打开分配权限面板
+      async handleOpenPermission(row){
+        // 保存当前角色id
+        this.currentId = row.id;
+        // 获取权限树数据
+        const { data, status } = await this.$http.get('/permission/list');
+        // 判断是否成功
+        if(status !== 200) return this.$message.error(data);
+        // 成功
+        this.permissionList = data;
+        // 设置当前角色的权限
+        this.currentSelects = [];
+        this.getAuthId({children: row.authority}, this.currentSelects);
+        // 打开dialog
+        this.authDialogVisible = true;
+      },
+      // 分配权限
+      async handleAssign(){
+        // 获取当前选择的权限父级id列表
+        const parent_list =  this.$refs.tree.getHalfCheckedKeys();
+        // 获取当前选中的id
+        const list = this.$refs.tree.getCheckedKeys();
+        // 合并两个数据
+        const auth_arr = [...parent_list, ...list];
+        // 发起网络请求
+        const { data, status } = await this.$http.put(`/role/auth/${this.currentId}`, { auth_arr });
+        // 判断是否成功
+        if(status !== 200) return this.$message.error(data);
+        // 成功
+        this.$message.success('权限分配成功~');
+        // 清空选中的数组
+        this.currentSelects = [];
+        // 刷新数据
+        this.getRoleList();
+        // 关闭dialog
+        this.authDialogVisible = false;
+      },
+      // 递归获取角色权限第三级的id
+      getAuthId(node, arr){
+        // 判断是否有children，已知第三级没有，作为递归出口
+        if (!node.children) {
+          return arr.push(node.id);
+        }
+        // 有children，就进入递归
+        node.children.forEach(v => {
+          this.getAuthId(v, arr);
+        })
       }
     }
   }

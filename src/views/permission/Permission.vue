@@ -19,17 +19,17 @@
         <el-table-column align="center" label="路径" prop="path"></el-table-column>
         <el-table-column align="center" label="请求方式" prop="type"></el-table-column>
         <el-table-column align="center" label="状态" prop="enable">
-          <template scope="scope">
+          <template #default="scope">
             <el-switch v-model="scope.row.enable" @change="handleSwitchChange($event, scope.row)"></el-switch>
           </template>
         </el-table-column>
         <el-table-column align="center" label="权限等级" prop="level">
-          <template scope="scope">
+          <template #default="scope">
             <el-tag :type="scope.row.level === 0 ? '' : scope.row.level === 1 ? 'success' : 'warning'">{{scope.row.level | level}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column align="center" label="操作" width="240">
-          <template scope="scope">
+          <template #default="scope">
             <el-button size="mini" type="primary" round icon="el-icon-edit" @click="handleOpenEdit(scope.row)">编辑</el-button>
             <el-button size="mini" type="danger" round icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
           </template>
@@ -80,7 +80,7 @@
       </el-form>
       <template #footer>
         <el-button @click="handleDialogClose">取 消</el-button>
-        <el-button type="primary" @click="handleAddPermission">确 定</el-button>
+        <el-button type="primary" @click="handleAddOrEdit">确 定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -260,7 +260,7 @@
         this.info.parent_id = id;
       },
       // 添加或编辑权限
-      handleAddPermission(){
+      handleAddOrEdit(){
         // 判断当前是不是编辑
         if(this.isEdit){
           this.handleEdit();

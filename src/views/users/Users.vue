@@ -26,12 +26,12 @@
       <el-table-column label="邮箱" align="center" prop="email"></el-table-column>
       <el-table-column label="角色" align="center" prop="role_name"></el-table-column>
       <el-table-column label="状态" align="center" prop="is_status" >
-        <template scope="scope">
+        <template #default="scope">
           <el-switch v-model="scope.row.is_status" @change="handleSwitchChange($event, scope.row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="240">
-        <template scope="scope">
+        <template #default="scope">
           <el-button size="mini" type="primary" round icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button size="mini" type="danger" round icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
         </template>
@@ -213,8 +213,8 @@ import Register from '../auth/children/Register.vue';
       },
       // 获取角色列表
       async getRoleList(){
-        const { data } = await this.$http.get('/role/list');
-        this.roles = data;
+        const { data } = await this.$http.get('/role/list', { params: { query_params: '', page_number: 1, current_number: 50 } });
+        this.roles = data.data;
       },
       // 编辑
       handleEdit(row){
