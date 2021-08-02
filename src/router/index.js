@@ -85,6 +85,8 @@ router.beforeEach((to, from, next) => {
   if(currentTime - info.time > (60 * 60  * 24 * 1000)){
     // 删除缓存
     window.localStorage.removeItem('info');
+    // 弹出提示
+    router.app.$message.error('身份信息已过期，请重新登录');
     // 跳转到login
     return next('/login');
   }

@@ -33,7 +33,15 @@ import {
   Option,
   Tag,
   Cascader,
-  Tree
+  Tree,
+  Collapse,
+  CollapseItem,
+  Image,
+  Tabs,
+  TabPane,
+  Alert,
+  InputNumber,
+  Popover
 } from 'element-ui';
 
 Vue.use(Button);
@@ -67,6 +75,14 @@ Vue.use(Option);
 Vue.use(Tag);
 Vue.use(Cascader);
 Vue.use(Tree);
+Vue.use(Collapse);
+Vue.use(CollapseItem);
+Vue.use(Image);
+Vue.use(Tabs);
+Vue.use(TabPane);
+Vue.use(Alert);
+Vue.use(InputNumber);
+Vue.use(Popover);
 
 
 Vue.prototype.$message = Message;

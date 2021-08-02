@@ -117,6 +117,7 @@ export default {
 
 <style lang="less" scoped>
 .home {
+  min-width: 1024px;
   .el-header {
     background-color: #ffffff;
     color: #333;
