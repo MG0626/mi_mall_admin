@@ -17,7 +17,7 @@
           <el-form-item label="商品名称" prop="name">
             <el-input  v-model="info.name" placeholder="请输入商品名称" size="small"/>
           </el-form-item>
-          <el-form-item label="商品价格" prop="price">
+          <el-form-item label="商品价格（按版本最低价格）" prop="price">
             <el-input-number v-model="info.price" :precision="2" :step="0.1" :min="0" size="small"></el-input-number>
           </el-form-item>
           <el-form-item label="商品库存" prop="inventory">
@@ -28,50 +28,93 @@
       <el-tab-pane label="商品参数" name="params">
         <el-row>
           <el-col>
-            <div class="title">版本</div>
-            <el-row>
-              <el-col :span="5" v-for="(item, index) in info.versions" :key="index">
-                <el-tag size="medium" closable @close="handleClose('versions', item)">{{item}}</el-tag>
-              </el-col>
-              <el-col :span="5">
-                <el-input
-                  class="input-new-tag"
-                  v-if="versionVisible"
-                  v-model="inputValue"
-                  ref="version"
-                  size="mini"
-                  @keyup.enter.native="handleInputConfirm('versionVisible')"
-                  @blur="handleInputConfirm('versionVisible')"
-                >
-                </el-input>
-                <el-button v-else class="button-new-tag" size="mini" @click="showInput('versionVisible', 'version')">添加版本</el-button>
-              </el-col>
-            </el-row>
+            <div>版本</div>
+            <el-table :data="info.versions" border size="mini">
+              <el-table-column align="center" label="版本名称" prop="name"></el-table-column>
+              <el-table-column align="center" label="版本价格" prop="price"></el-table-column>
+              <el-table-column
+                align="center"
+                label="操作">
+                <template #default="scope">
+                  <el-button 
+                    type="danger" 
+                    icon="el-icon-delete" 
+                    circle 
+                    size="mini"
+                    @click.native.prevent="deleteVersion(scope.$index)"></el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div style="margin-top: 15px">
+              <el-popover
+                placement="right"
+                title="添加版本"
+                width="240"
+                v-model="popoverVisible"
+                trigger="manual">
+                <el-form ref="versions" :model="versions" label-position="right" :rules="versionsRule">
+                  <el-form-item label-width="80px" prop="name" label="版本名称">
+                    <el-input v-model="versions.name" size="small"></el-input>
+                  </el-form-item>
+                  <el-form-item label-width="80px" prop="price" label="版本价格">
+                    <el-input-number v-model="versions.price" :precision="2" :step="0.1" :min="0" size="small"></el-input-number>
+                  </el-form-item>
+                </el-form>
+                <div style="text-align: right; margin: 0">
+                  <el-button size="mini" @click="popoverVisible = false">取消</el-button>
+                  <el-button type="primary" size="mini" @click="handleAddVersion">确定</el-button>
+                </div>
+                <template #reference>
+                  <el-button size="mini" @click="popoverVisible = true">添加版本</el-button>
+                </template>
+              </el-popover>
+            </div>
           </el-col>
           <el-col>
             <div class="title">颜色</div>
             <el-row>
               <el-col :span="4" v-for="(item, index) in info.colors" :key="index">
-                <el-tag size="medium" closable @close="handleClose('colors', item)">{{item}}</el-tag>
+                <el-tag size="medium" closable @close="handleClose(index)">{{item}}</el-tag>
               </el-col>
               <el-col :span="4">
                 <el-input
                   class="input-new-tag"
                   v-if="colorVisible"
-                  v-model="inputValue"
+                  v-model="colorValue"
                   ref="color"
                   size="mini"
-                  @keyup.enter.native="handleInputConfirm('colorVisible')"
-                  @blur="handleInputConfirm('colorVisible')"
+                  @keyup.enter.native="handleInputConfirm"
+                  @blur="handleInputConfirm"
                 >
                 </el-input>
-                <el-button v-else class="button-new-tag" size="mini" @click="showInput('colorVisible', 'color')">添加颜色</el-button>
+                <el-button v-else class="button-new-tag" size="mini" @click="showInput">添加颜色</el-button>
               </el-col>
             </el-row>
           </el-col>
         </el-row>
       </el-tab-pane>
       <el-tab-pane label="商品图片" name="images">
+        <div class="title">封面图片</div>
+        <div class="cover">
+          <el-upload
+            :action="$http.defaults.baseURL + '/upload/images?parentName=' + info.name"
+            :headers="headers"
+            :show-file-list="false"
+            :before-upload="handleBeforeUpload"
+            :on-remove="() => info.cover = ''"
+            :on-success="(response) => handleSuccess(response, 'cover')">
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+          <el-image
+            style="width: 100px; height: 100px;margin-top: 15px"
+            v-if="info.cover"
+            :src="info.cover"
+            :preview-src-list="[info.cover]"
+            fit="contain">
+          </el-image>
+          <div style="font-size: 12px;margin: 10px 0">（ 点击预览大图 ）</div>
+        </div>
+        <div class="title">主要图片</div>
         <el-upload
           :action="$http.defaults.baseURL + '/upload/images?parentName=' + info.name"
           :headers="headers"
@@ -117,10 +160,13 @@
           </el-col>
           <el-col>
             <div>版本</div>
-            <el-row class="text">
+            <el-row>
               <el-col v-if="info.versions.length === 0">无</el-col>
-              <el-col :span="4" v-for="(item, index) in info.versions" :key="index">
-                <el-tag size="medium">{{item}}</el-tag>
+              <el-col>
+                <el-table :data="info.versions" border size="mini">
+                  <el-table-column align="center" label="版本名称" prop="name"></el-table-column>
+                  <el-table-column align="center" label="版本价格" prop="price"></el-table-column>
+                </el-table>
               </el-col>
             </el-row>
           </el-col>
@@ -134,7 +180,20 @@
             </el-row>
           </el-col>
           <el-col>
-            <div>商品图片</div>
+            <div>封面图片</div>
+            <el-row :gutter="20" class="text">
+              <el-col v-if="!info.cover">无</el-col>
+              <el-col v-else>
+                <el-image
+                  style="width: 100px; height: 100px;"
+                  :src="info.cover"
+                  :preview-src-list="[info.cover]"
+                  fit="contain"></el-image>
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col>
+            <div>主要图片</div>
             <el-row :gutter="20" class="text">
               <el-col v-if="info.imgArr.length === 0">无</el-col>
               <el-col :span="6" v-for="(url, index) in info.imgArr" :key="index" style="text-align: center">
@@ -204,11 +263,23 @@ export default {
         inventory: 0,
         colors: [],
         detail: '',
+        cover: '',
         imgArr: [],
         versions: []
       },
-      inputValue: '',
-      versionVisible: false,
+      colorValue: '',
+      // popover开关
+      popoverVisible: false,
+      // 版本列表
+      versions: {
+        name: '',
+        price: ''
+      },
+      // 添加版本form验证规则
+      versionsRule: {
+        name: { required: true, message: '请输入版本名称', trigger: 'blur' },
+        price: { required: true, message: '请输入版本价格', trigger: 'blur' }
+      },
       colorVisible: false,
       // 图片上传的请求头
       headers: {
@@ -230,41 +301,50 @@ export default {
     // 添加富文本编辑器
     this.wangEditor();
   },
-  updated(){
-  },
   methods: {
     // 获取分类列表
     async getCategorys(){
       const { data } = await this.$http.get('/category/list');
       this.categorys = data;
     },
-    // 删除版本或颜色子项
-    handleClose(name, tag ) {
-      this.info[name].splice(this.info[name].indexOf(tag), 1);
+    // 删除版本
+    deleteVersion(index) {
+      this.info.versions.splice(index, 1);
+    },
+    // 删除颜色子项
+    handleClose(index) {
+      this.info.colors.splice(index, 1);
     },
     // 显示输入框
-    showInput(value, ref) {
-      this[value] = true;
+    showInput() {
+      this.colorVisible = true;
       this.$nextTick(_ => {
-        if (value === 'versionVisible') {
-          this.$refs.version.$refs.input.focus();
-        }else{
-          this.$refs.color.$refs.input.focus();
-        }
+        this.$refs.color.$refs.input.focus();
       });
     },
-    // 添加版本或颜色
-    handleInputConfirm(value) {
-      let inputValue = this.inputValue;
-      if (inputValue) {
-        if (value === 'versionVisible') {
-          this.info.versions.push(inputValue);
-        }else{
-          this.info.colors.push(inputValue);
-        }
+    // 添加颜色
+    handleInputConfirm() {
+      let colorValue = this.colorValue;
+      if (colorValue) {
+        this.info.colors.push(colorValue);
       }
-      this[value] = false;
-      this.inputValue = '';
+      this.colorVisible = false;
+      this.colorValue = '';
+    },
+    // 添加版本
+    handleAddVersion(){
+      this.$refs.versions.validate((valid) => {
+        if (valid) {
+          // 添加到info.versions中
+          this.info.versions.push(this.versions);
+          // 清空缓存
+          this.versions = {};
+          // 关闭弹窗
+          this.popoverVisible = false;
+        } else {
+          return false;
+        }
+      });
     },
     // 删除图片
     handleRemove(file, fileList) {
@@ -290,9 +370,13 @@ export default {
       return false;
     },
     // 图片上传成功时的钩子
-    handleSuccess(response){
+    handleSuccess(response, key='imgArr'){
       // 图片路径
       const path = `http://${response.Location}`;
+      // 判断当前是封面图片，还是主要图片
+      if (key === 'cover') {
+        return this.info.cover = path;
+      }
       // 添加到商品信息的图片数组中
       this.info.imgArr.push(path);
     },
@@ -350,7 +434,7 @@ export default {
         this.activeName = 'category';
         // 当前为编辑模式时才执行
         if (this.is_edit) {
-          const { category_id, colors, detail, imgArr, inventory, name, price, versions } = value;
+          const { category_id, colors, detail, cover, imgArr, inventory, name, price, versions } = value;
           // 判断图片数组是否为null
           if (imgArr) {
             // 当前图片数组，每一项重新转为对象，返回新数组
@@ -370,6 +454,7 @@ export default {
             category_id,
             colors,
             detail,
+            cover: cover ||  '',
             imgArr: imgArr || [],
             inventory,
             name,
@@ -384,6 +469,7 @@ export default {
             inventory: 0,
             colors: [],
             detail: '',
+            cover: '',
             imgArr: [],
             versions: []
           }

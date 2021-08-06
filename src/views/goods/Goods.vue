@@ -26,11 +26,10 @@
           <template #default='scope'>
             <el-collapse v-model="activeNames" accordion>
               <el-collapse-item title="版本" name="1">
-                <el-row :gutter="20">
-                  <el-col :xs="6" :sm="4" :md="3" v-for="(item, index) in scope.row.versions" :key="index">
-                    <el-tag size="small">{{item}}</el-tag>
-                  </el-col>
-                </el-row>
+                <el-table :data="scope.row.versions" border size="mini">
+                  <el-table-column align="center" label="版本名称" prop="name"></el-table-column>
+                  <el-table-column align="center" label="版本价格" prop="price"></el-table-column>
+                </el-table>
               </el-collapse-item>
               <el-collapse-item title="颜色" name="2">
                 <el-row :gutter="20">
@@ -39,7 +38,20 @@
                   </el-col>
                 </el-row>
               </el-collapse-item>
-              <el-collapse-item title="图片" name="3">
+              <el-collapse-item title="封面图片" name="3">
+                <el-card shadow="never">
+                  <div v-if="!scope.row.cover">无</div>
+                <div v-else>
+                  <el-image
+                    style="width: 100px; height: 100px;"
+                    :src="scope.row.cover"
+                    :preview-src-list="[scope.row.cover]"
+                    fit="contain"></el-image>
+                  <div>（ 点击预览大图 ）</div>
+                </div>
+                </el-card>
+              </el-collapse-item>
+              <el-collapse-item title="主要图片" name="4">
                 <el-card shadow="never">
                   <el-row :gutter="20">
                     <el-col :xs="8" :sm="6" :md="4" v-for="(url, index) in scope.row.imgArr" :key="index" style="text-align: center">
@@ -50,10 +62,10 @@
                         fit="contain"></el-image>
                     </el-col>
                   </el-row>
-                  <div style="text-align: center;">（ 点击预览大图 ）</div>
+                  <div>（ 点击预览大图 ）</div>
                 </el-card>
               </el-collapse-item>
-              <el-collapse-item title="描述" name="4">
+              <el-collapse-item title="描述" name="5">
                 <el-card shadow="never">
                   <div v-html="scope.row.detail"></div>
                 </el-card>
