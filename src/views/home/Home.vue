@@ -55,7 +55,8 @@ export default {
       icons: {
         1: 'el-icon-s-custom',
         2: 'el-icon-s-order',
-        24: 'el-icon-s-goods'
+        24: 'el-icon-s-goods',
+        75: 'el-icon-s-promotion'
       },
       // 导航栏收缩开关
       is_collapse: false

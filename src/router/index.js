@@ -30,6 +30,10 @@ const routes = [
       {
         path: '/category',
         component: () => import('../views/category/Category')
+      },
+      {
+        path: '/advertising',
+        component: () => import('../views/advertising/Advertising')
       }
     ]
   },
