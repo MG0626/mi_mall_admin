@@ -17,6 +17,9 @@
           <el-form-item label="商品名称" prop="name">
             <el-input  v-model="info.name" placeholder="请输入商品名称" size="small"/>
           </el-form-item>
+          <el-form-item label="商品描述" prop="goods_desc">
+            <el-input  v-model="info.goods_desc" placeholder="请输入商品描述" size="small"/>
+          </el-form-item>
           <el-form-item label="商品价格（按版本最低价格）" prop="price">
             <el-input-number v-model="info.price" :precision="2" :step="0.1" :min="0" size="small"></el-input-number>
           </el-form-item>
@@ -151,6 +154,11 @@
             <div class="text">{{info.name}}</div>
           </el-col>
           <el-col>
+            <div>商品描述</div>
+            <div class="text" v-if="info.goods_desc === ''">无</div>
+            <div class="text">{{info.goods_desc}}</div>
+          </el-col>
+          <el-col>
             <div>商品价格</div>
             <div class="text">{{info.price}}</div>
           </el-col>
@@ -265,7 +273,8 @@ export default {
         detail: '',
         cover: '',
         imgArr: [],
-        versions: []
+        versions: [],
+        goods_desc: ''
       },
       colorValue: '',
       // popover开关
@@ -362,7 +371,7 @@ export default {
       this.info.imgArr.splice(index, 1);
     },
     // 上传文件之前的钩子
-    handleBeforeUpload(file) {
+    handleBeforeUpload() {
       // 判断是否有商品名称
       if (this.info.name.trim() !== '') return true;
       // 没有名称，弹出提示
@@ -434,7 +443,7 @@ export default {
         this.activeName = 'category';
         // 当前为编辑模式时才执行
         if (this.is_edit) {
-          const { category_id, colors, detail, cover, imgArr, inventory, name, price, versions } = value;
+          const { category_id, colors, detail, cover, imgArr, inventory, name, goods_desc, price, versions } = value;
           // 判断图片数组是否为null
           if (imgArr) {
             // 当前图片数组，每一项重新转为对象，返回新数组
@@ -458,6 +467,7 @@ export default {
             imgArr: imgArr || [],
             inventory,
             name,
+            goods_desc,
             price,
             versions
           }
@@ -465,6 +475,7 @@ export default {
           this.info = {
             category_id: null,
             name: '',
+            goods_desc: '',
             price: 0,
             inventory: 0,
             colors: [],
