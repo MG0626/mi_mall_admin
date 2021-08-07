@@ -75,6 +75,7 @@
         </el-table-column>
         <el-table-column label="序号" type="index" align="center"></el-table-column>
         <el-table-column label="商品名称" align="center" prop="name"></el-table-column>
+        <el-table-column label="商品描述" align="center" prop="goods_desc"></el-table-column>
         <el-table-column label="价格" align="center" prop="price"></el-table-column>
         <el-table-column label="分类" align="center" prop="category_name"></el-table-column>
         <el-table-column label="状态" align="center" prop="is_status" >
@@ -82,7 +83,7 @@
             <el-tag size="small" :type="scope.row.is_status | typeName">{{scope.row.is_status | state}}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="280">
+        <el-table-column label="操作" align="center" width="260">
           <template #default="scope">
             <popover style="margin-right: 10px;" :is_status="scope.row.is_status" :id="scope.row.id" @getGoodsList="getGoodsList" />
             <el-button size="mini" type="primary" round icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
@@ -194,6 +195,7 @@ import Popover from './children/Popover.vue';
         this.currentInfo = {
           category_id: null,
           name: '',
+          goods_desc: '',
           price: 0,
           inventory: 0,
           colors: [],
