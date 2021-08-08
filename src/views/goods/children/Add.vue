@@ -156,7 +156,7 @@
           <el-col>
             <div>商品描述</div>
             <div class="text" v-if="info.goods_desc === ''">无</div>
-            <div class="text">{{info.goods_desc}}</div>
+            <div class="text">{{ info.goods_desc }}</div>
           </el-col>
           <el-col>
             <div>商品价格</div>
